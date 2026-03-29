@@ -4,7 +4,7 @@
 
 Arvyon is a ZK-verified autonomous AI agent framework for trustless policy
 enforcement on blockchain. It enables users to deploy AI agents that act
-on-chain autonomously — while every decision is paired with a zero-knowledge
+on-chain autonomously, while every decision is paired with a zero-knowledge
 proof of policy compliance, stored as an immutable on-chain audit record.
 
 ---
@@ -53,7 +53,7 @@ Arvyon introduces three primitives:
 | Layer | Technology |
 |---|---|
 | AI Agent Core | Python, LangGraph |
-| ZK Proof Engine | Circom + SnarkJS / Noir (Aztec) |
+| ZK Proof Engine | Circom, Noir (Aztec) |
 | Smart Contracts | Solidity (EVM compatible) |
 | On-chain Data | The Graph (GraphQL subgraphs) |
 | Frontend dApp | Next.js, ethers.js, Tailwind CSS |
@@ -80,4 +80,3 @@ Key references this work builds upon:
 ## Status
 
 🔨 In active development
----
