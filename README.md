@@ -13,10 +13,8 @@ proof of policy compliance, stored as an immutable on-chain audit record.
 
 AI agents operating on blockchain can execute transactions, vote in DAOs,
 and manage assets autonomously. But there's no way to prove the agent
-followed the rules it was given — users must blindly trust off-chain logic.
+followed the rules it was given by, leading users to blindly trust off-chain logic.
 
-**You can see WHAT the agent did. You can never prove WHY, or WHETHER it
-followed your policy.**
 
 ---
 
@@ -33,7 +31,6 @@ Arvyon introduces three primitives:
   agent decision, queryable by anyone, forever
 
 ---
--
 
 ## Use Cases
 
