@@ -1,0 +1,9 @@
+{
+  "sepolia": {
+    "network": "sepolia",
+    "contractAddress": "0xc582c419b0900fEB6dA172368d570f1FD5b355CA",
+    "deploymentTx": "0x3ceb1fa29fb1800877be04f00728236b6e947b4ea93ce3d79597642d4af596e8",
+    "deployer": "0xde026c0A58B40568F7a2b413ba1952Cbe3d52f8a",
+    "timestamp": "2026-03-31T19:19:01.388Z"
+  }
+}
