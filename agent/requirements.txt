@@ -1,0 +1,24 @@
+# Arvyon AI Agent Dependencies
+
+# LangGraph - Multi-node autonomous workflow
+langgraph>=0.1.0
+langchain>=0.1.0
+
+# LLM Integration
+anthropic>=0.20.0
+
+# Blockchain
+web3>=6.0.0
+eth-account>=0.10.0
+
+# ZK Proofs
+# snarkjs (via subprocess) - will be called from Python
+
+# Utilities
+python-dotenv>=1.0.0
+requests>=2.31.0
+pydantic>=2.0.0
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.21.0

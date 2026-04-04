@@ -1,9 +1,74 @@
 {
-  "sepolia": {
-    "network": "sepolia",
-    "contractAddress": "0xc582c419b0900fEB6dA172368d570f1FD5b355CA",
-    "deploymentTx": "0x3ceb1fa29fb1800877be04f00728236b6e947b4ea93ce3d79597642d4af596e8",
-    "deployer": "0xde026c0A58B40568F7a2b413ba1952Cbe3d52f8a",
-    "timestamp": "2026-03-31T19:19:01.388Z"
-  }
+  "network": "sepolia",
+  "chainId": 11155111,
+  "timestamp": "2026-04-03T08:26:15.430Z",
+  "deployer": "0xde026c0A58B40568F7a2b413ba1952Cbe3d52f8a",
+  "note": "Single source of truth for Arvyon contract addresses. Referenced by: app/.env.local, docs, paper",
+  "contracts": {
+    "PolicyRegistry": {
+      "address": "0xEee3203FED2668FcFA5dfD70E2005ECDDB616730",
+      "role": "Store AI agent behavior policies as bytes32 hashes",
+      "functions": [
+        "registerPolicy(bytes32)",
+        "updatePolicy(bytes32)",
+        "revokePolicy()",
+        "getPolicy(address) → bytes32",
+        "hasPolicy(address) → bool",
+        "getPolicyTimestamp(address) → uint256"
+      ],
+      "events": [
+        "PolicyRegistered(address indexed, bytes32, uint256)",
+        "PolicyUpdated(address indexed, bytes32, bytes32, uint256)"
+      ],
+      "etherscan": "https://sepolia.etherscan.io/address/0xEee3203FED2668FcFA5dfD70E2005ECDDB616730",
+      "flattened_source": "contracts/flattened/PolicyRegistry.flat.sol"
+    },
+    "PDRLogger": {
+      "address": "0x6B787F26F20450600211b593Dd057D11Be58Da30",
+      "role": "Immutable audit trail - pure event emitter for policy decisions",
+      "functions": [
+        "logDecision(address, string, bytes32, bool)"
+      ],
+      "events": [
+        "DecisionLogged(address indexed, string, bytes32 indexed, bool, uint256)"
+      ],
+      "etherscan": "https://sepolia.etherscan.io/address/0x6B787F26F20450600211b593Dd057D11Be58Da30",
+      "flattened_source": "contracts/flattened/PDRLogger.flat.sol"
+    },
+    "Executor": {
+      "address": "0x868c6bc7a7B7eF5Db2cA273c169519D6C5f5C5A3",
+      "role": "STUB - Execute agent actions with policy compliance verification",
+      "note": "isVerified parameter is test stub; will be replaced with real ZK proof in Phase 2",
+      "functions": [
+        "executeWithVerification(address, string, bool) → bool",
+        "getAgentPolicy(address) → bytes32",
+        "isAgentCompliant(address) → bool",
+        "setPolicyRegistry(address)",
+        "setPDRLogger(address)"
+      ],
+      "events": [
+        "ExecutionAttempted(address indexed, bool, string, uint256)"
+      ],
+      "etherscan": "https://sepolia.etherscan.io/address/0x868c6bc7a7B7eF5Db2cA273c169519D6C5f5C5A3",
+      "flattened_source": "contracts/flattened/Executor.flat.sol"
+    }
+  },
+  "test_transaction": {
+    "function": "registerPolicy(bytes32)",
+    "hash": "0x5c1c8138481edc781f0e5f3962bbe8812ffb43a7ed1c3af76af4cd9ae17ad96e",
+    "block": 10579773,
+    "status": "✅ Confirmed",
+    "etherscan": "https://sepolia.etherscan.io/tx/0x5c1c8138481edc781f0e5f3962bbe8812ffb43a7ed1c3af76af4cd9ae17ad96e"
+  },
+  "references": {
+    "app_env": "app/.env.local",
+    "deployment_summary": "DEPLOYMENT_SUMMARY.md",
+    "verification_guide": "ETHERSCAN_VERIFICATION.md"
+  },
+  "PolicyRegistry": "0xA765a452c26DD14278B23830B801887F46DB3bF2",
+  "PDRLogger": "0x93Cd482389Ba18D157F52e8871f28719698c3f5E",
+  "PolicyCheckVerifier": "0x657ed22550Cb72201d1F968d9A282a46B9e4Fd44",
+  "Executor": "0x2131aB1c9F3F9E7155FF2f29C62cac31564D0114",
+  "VerifierDeploymentNote": "1-signal circuit verifier (from policy_check_final_new.zkey)",
+  "VerifierDeploymentTimestamp": "2026-04-03T10:25:39.842Z"
 }

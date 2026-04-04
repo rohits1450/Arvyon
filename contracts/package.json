@@ -4,16 +4,26 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js --network sepolia",
+    "test-e2e": "hardhat run scripts/test-e2e.js --network sepolia",
+    "test-e2e-real-proof": "hardhat run scripts/test-e2e-real-proof.js --network sepolia",
+    "test-verifier-only": "hardhat run scripts/test-verifier-only.js --network sepolia",
+    "test-verifier-direct": "hardhat run scripts/test-verifier-direct.js --network sepolia"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.1.2",
+    "@nomicfoundation/hardhat-verify": "^3.0.13",
+    "@nomiclabs/hardhat-etherscan": "^3.1.8",
     "@types/node": "^25.5.0",
+    "chai": "^6.2.2",
     "ethers": "^5.8.0",
-    "hardhat": "^3.3.0",
+    "hardhat": "^2.28.6",
+    "ts-node": "^10.9.2",
     "typescript": "^6.0.2"
   },
   "dependencies": {

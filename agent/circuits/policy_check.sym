@@ -1,0 +1,6 @@
+1,2,0,main.actionValue
+2,3,0,main.policyMin
+3,4,0,main.policyMax
+4,1,0,main.isCompliant
+5,5,0,main.minCheckPass
+6,6,0,main.maxCheckPass
