@@ -1,0 +1,186 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "D:\\Arvyon\\contracts\\contracts\\PolicyRegistry.sol": {
+      "lastModificationDate": 1775195535315,
+      "contentHash": "8cbb4c1db0d46e6522b9db7396d00084",
+      "sourceName": "contracts/PolicyRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "PolicyRegistry"
+      ]
+    },
+    "D:\\Arvyon\\contracts\\contracts\\Executor.sol": {
+      "lastModificationDate": 1775203929377,
+      "contentHash": "648c55e19efc68bd75da1531650fb3e1",
+      "sourceName": "contracts/Executor.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./PolicyRegistry.sol",
+        "./PDRLogger.sol",
+        "./zk/PolicyCheckVerifier.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "Executor"
+      ]
+    },
+    "D:\\Arvyon\\contracts\\contracts\\PDRLogger.sol": {
+      "lastModificationDate": 1775196613470,
+      "contentHash": "620b5bceb6be284b46d44e00ab470029",
+      "sourceName": "contracts/PDRLogger.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "PDRLogger"
+      ]
+    },
+    "D:\\Arvyon\\contracts\\contracts\\zk\\PolicyCheckVerifier.sol": {
+      "lastModificationDate": 1775211889939,
+      "contentHash": "d310542feab9a3db97de168a2d56c74b",
+      "sourceName": "contracts/zk/PolicyCheckVerifier.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.7.0 <0.9.0"
+      ],
+      "artifacts": [
+        "Groth16Verifier"
+      ]
+    },
+    "D:\\Arvyon\\contracts\\contracts\\VerifierDebug.sol": {
+      "lastModificationDate": 1775207047024,
+      "contentHash": "57c53bce392d70a61815356f68e5f67b",
+      "sourceName": "contracts/VerifierDebug.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./zk/PolicyCheckVerifier.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.19"
+      ],
+      "artifacts": [
+        "VerifierDebug"
+      ]
+    }
+  }
+}
