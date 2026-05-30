@@ -1,7 +1,5 @@
 # Arvyon
 
-> Every agent action. Cryptographically proven. Permanently audited.
-
 Arvyon is a ZK-verified autonomous AI agent framework for trustless policy
 enforcement on blockchain. It enables users to deploy AI agents that act
 on-chain autonomously, while every decision is paired with a zero-knowledge
@@ -54,7 +52,7 @@ Arvyon introduces three primitives:
 | Smart Contracts | Solidity (EVM compatible) |
 | On-chain Data | The Graph (GraphQL subgraphs) |
 | Frontend dApp | Next.js, ethers.js, Tailwind CSS |
-| Testing | Hardhat, Foundry |
+| Testing | Foundry |
 
 ---
 
