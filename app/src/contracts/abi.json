@@ -1,0 +1,22 @@
+{
+  "PolicyRegistry": [
+    { "inputs": [{ "internalType": "bytes32", "name": "policyHash", "type": "bytes32" }], "name": "registerPolicy", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    { "inputs": [{ "internalType": "bytes32", "name": "newPolicyHash", "type": "bytes32" }], "name": "updatePolicy", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    { "inputs": [], "name": "revokePolicy", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    { "inputs": [{ "internalType": "address", "name": "user", "type": "address" }], "name": "getPolicy", "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }], "stateMutability": "view", "type": "function" },
+    { "inputs": [{ "internalType": "address", "name": "user", "type": "address" }], "name": "hasPolicy", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" },
+    { "inputs": [{ "internalType": "address", "name": "user", "type": "address" }], "name": "getPolicyTimestamp", "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }], "stateMutability": "view", "type": "function" },
+    { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "user", "type": "address" }, { "indexed": false, "internalType": "bytes32", "name": "policyHash", "type": "bytes32" }, { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }], "name": "PolicyRegistered", "type": "event" },
+    { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "user", "type": "address" }, { "indexed": false, "internalType": "bytes32", "name": "oldPolicyHash", "type": "bytes32" }, { "indexed": false, "internalType": "bytes32", "name": "newPolicyHash", "type": "bytes32" }, { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }], "name": "PolicyUpdated", "type": "event" }
+  ],
+  "PDRLogger": [
+    { "inputs": [{ "internalType": "address", "name": "agent", "type": "address" }, { "internalType": "string", "name": "actionType", "type": "string" }, { "internalType": "bytes32", "name": "policyHash", "type": "bytes32" }, { "internalType": "bool", "name": "isCompliant", "type": "bool" }], "name": "logDecision", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
+    { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "agent", "type": "address" }, { "indexed": false, "internalType": "string", "name": "actionType", "type": "string" }, { "indexed": true, "internalType": "bytes32", "name": "policyHash", "type": "bytes32" }, { "indexed": false, "internalType": "bool", "name": "isCompliant", "type": "bool" }, { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }], "name": "DecisionLogged", "type": "event" }
+  ],
+  "Executor": [
+    { "inputs": [{ "internalType": "address", "name": "agent", "type": "address" }], "name": "getAgentPolicy", "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }], "stateMutability": "view", "type": "function" },
+    { "inputs": [{ "internalType": "address", "name": "agent", "type": "address" }], "name": "isAgentCompliant", "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }], "stateMutability": "view", "type": "function" },
+    { "inputs": [], "name": "owner", "outputs": [{ "internalType": "address", "name": "", "type": "address" }], "stateMutability": "view", "type": "function" },
+    { "anonymous": false, "inputs": [{ "indexed": true, "internalType": "address", "name": "agent", "type": "address" }, { "indexed": false, "internalType": "bool", "name": "isAuthorized", "type": "bool" }, { "indexed": false, "internalType": "string", "name": "actionType", "type": "string" }, { "indexed": false, "internalType": "uint256", "name": "timestamp", "type": "uint256" }], "name": "ExecutionAttempted", "type": "event" }
+  ]
+}

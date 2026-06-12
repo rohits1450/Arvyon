@@ -17,7 +17,7 @@ import tempfile
 # Path to circuit files
 CIRCUITS_DIR = Path(__file__).parent / "circuits"
 POLICY_CHECK_WASM = CIRCUITS_DIR / "policy_check.wasm"
-POLICY_CHECK_ZKEY = CIRCUITS_DIR / "policy_check_final.zkey"
+POLICY_CHECK_ZKEY = CIRCUITS_DIR / "zkey_final.zkey"
 
 
 class ZKProofGenerationError(Exception):
@@ -100,9 +100,21 @@ const fs = require('fs');
             '{wasm_path}',
             '{zkey_path}'
         );
+        // Verify the proof off-chain against the verification key derived
+        // from this zkey before trusting it.
+        const vKey = await snarkjs.zKey.exportVerificationKey('{zkey_path}');
+        const verified = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+        if (!verified) {{
+            console.error('FAILED: proof failed off-chain verification');
+            process.exit(1);
+        }}
         fs.writeFileSync('{proof_path}', JSON.stringify(proof));
         fs.writeFileSync('{public_path}', JSON.stringify(publicSignals));
         console.log('SUCCESS');
+        // snarkjs keeps a worker-thread pool alive, which prevents node
+        // from exiting on its own. Exit explicitly so the parent process
+        // (Python subprocess) does not block waiting for EOF.
+        process.exit(0);
     }} catch (e) {{
         console.error('FAILED: ' + e.message);
         process.exit(1);

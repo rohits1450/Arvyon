@@ -1,0 +1,30 @@
+Viewed main.py:1-99
+Viewed chain.py:1-325
+
+Based on the codebase, the project operates as a continuous pipeline that bridges off-chain AI reasoning with on-chain verification. The workflow is orchestrated by a **LangGraph** state machine running in the `agent` directory. 
+
+Here is step-by-step how the project works end-to-end:
+
+### 1. Setup & Policy Registration (Frontend)
+A user interacts with the Next.js frontend (`/app`) to create and register a policy for their AI agent. This policy (the rules the agent must follow) is hashed and stored on the blockchain via the `PolicyRegistry` smart contract.
+
+### 2. The Agent Loop (The LangGraph Pipeline)
+The core of the project is in `/agent/main.py`, which defines an autonomous loop consisting of four specific "nodes" (steps):
+
+*   **Step 1: Observe (`observe_node`)**
+    The agent fetches the current state of the world. It pulls the registered policy hash from the `PolicyRegistry` contract, current on-chain state, and any necessary market data.
+*   **Step 2: Decide (`decide_node`)**
+    The agent uses an LLM (Large Language Model) to reason about the data it just observed. It asks: *"Given the current state and my rules (policy), should I take an action? If so, what?"*
+*   **Step 3: Intent & ZK Proof (`intent_node`)**
+    If the agent decides to act, it generates a **Transaction Intent Schema (TIS)**—a structured JSON document declaring exactly what it is going to do. It then passes this intent through a ZK bridge (`zk_bridge.py`) to generate a **Zero-Knowledge (ZK) proof** (using Circom/Noir). This mathematically proves the decision complies with the policy *without* revealing the inner workings of the AI.
+*   **Step 4: Submit (`submit_node`)**
+    The agent takes the TIS and the ZK proof and submits them to the blockchain via `/agent/chain.py`.
+
+### 3. On-Chain Verification (Smart Contracts)
+When the agent submits its decision to the blockchain on the Sepolia testnet:
+*   The **`Executor`** contract receives the transaction and runs an on-chain verification of the ZK proof (`executeWithVerification()`). 
+*   If the proof is mathematically valid (meaning the agent definitively followed the policy), the action is approved.
+*   The decision is then permanently logged into the **`PDRLogger`** (Policy Decision Record).
+
+### 4. Audit & Transparency (Frontend)
+Anyone can go to the frontend dApp's dashboard and view the public **Policy Decision Record** feed. They don't have to trust the AI developer; they can see the verified mathematical proof on the blockchain that the agent followed its exact instructions.

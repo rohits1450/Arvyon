@@ -1,58 +1,74 @@
+/**
+ * Deploy the full Arvyon contract suite and write contracts/deployments.json,
+ * then sync addresses into the frontend. The Groth16Verifier is generated from
+ * agent/circuits/zkey_final.zkey, so proofs produced by the agent verify on-chain.
+ *
+ * Local:   npx hardhat run scripts/deploy.js
+ * Sepolia: npx hardhat run scripts/deploy.js --network sepolia   (needs .env)
+ */
 const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
+const { sync } = require("./sync-config");
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
-  console.log(`🔑 Deployer: ${deployer.address}\n`);
+  const network = hre.network.name;
+  const chainId = (await hre.ethers.provider.getNetwork()).chainId;
+  console.log(`Network: ${network} (chainId ${chainId})`);
+  console.log(`Deployer: ${deployer.address}\n`);
 
   const deploymentPath = path.join(__dirname, "..", "deployments.json");
-  let deployments = {};
 
-  if (fs.existsSync(deploymentPath)) {
-    deployments = JSON.parse(fs.readFileSync(deploymentPath, "utf-8"));
-  }
-
-  // Step 1: Deploy PolicyRegistry
-  console.log("📋 Step 1: Deploying PolicyRegistry...");
+  console.log("Deploying PolicyRegistry...");
   const PolicyRegistry = await hre.ethers.getContractFactory("PolicyRegistry");
   const policyRegistry = await PolicyRegistry.deploy();
   await policyRegistry.deployed();
-  console.log(`✅ PolicyRegistry deployed to: ${policyRegistry.address}\n`);
 
-  // Step 2: Deploy PDRLogger
-  console.log("📝 Step 2: Deploying PDRLogger...");
+  console.log("Deploying PDRLogger...");
   const PDRLogger = await hre.ethers.getContractFactory("PDRLogger");
   const pdrLogger = await PDRLogger.deploy();
   await pdrLogger.deployed();
-  console.log(`✅ PDRLogger deployed to: ${pdrLogger.address}\n`);
 
-  // Step 3: Deploy PolicyCheckVerifier (ZK proof verifier)
-  console.log("🔐 Step 3: Deploying PolicyCheckVerifier...");
-  const PolicyCheckVerifier = await hre.ethers.getContractFactory("Groth16Verifier");
-  const verifier = await PolicyCheckVerifier.deploy();
+  console.log("Deploying PolicyCheckVerifier (Groth16Verifier)...");
+  const Verifier = await hre.ethers.getContractFactory("Groth16Verifier");
+  const verifier = await Verifier.deploy();
   await verifier.deployed();
-  console.log(`✅ PolicyCheckVerifier deployed to: ${verifier.address}\n`);
 
-  // Step 4: Deploy Executor with references to the other contracts
-  console.log("⚙️  Step 4: Deploying Executor...");
+  console.log("Deploying Executor...");
   const Executor = await hre.ethers.getContractFactory("Executor");
-  const executor = await Executor.deploy(policyRegistry.address, pdrLogger.address, verifier.address);
+  const executor = await Executor.deploy(
+    policyRegistry.address,
+    pdrLogger.address,
+    verifier.address,
+  );
   await executor.deployed();
-  console.log(`✅ Executor deployed to: ${executor.address}\n`);
 
-  // Save all deployment addresses
-  deployments["PolicyRegistry"] = policyRegistry.address;
-  deployments["PDRLogger"] = pdrLogger.address;
-  deployments["PolicyCheckVerifier"] = verifier.address;
-  deployments["Executor"] = executor.address;
-  deployments["deployer"] = deployer.address;
-  deployments["timestamp"] = new Date().toISOString();
+  const deployments = {
+    network,
+    chainId: Number(chainId),
+    deployer: deployer.address,
+    timestamp: new Date().toISOString(),
+    note: "Single source of truth for Arvyon contract addresses. Verifier generated from agent/circuits/zkey_final.zkey.",
+    contracts: {
+      PolicyRegistry: { address: policyRegistry.address },
+      PDRLogger: { address: pdrLogger.address },
+      PolicyCheckVerifier: { address: verifier.address },
+      Executor: { address: executor.address },
+    },
+    // Flat aliases kept for the Python agent (agent/chain.py) and tooling.
+    PolicyRegistry: policyRegistry.address,
+    PDRLogger: pdrLogger.address,
+    PolicyCheckVerifier: verifier.address,
+    Executor: executor.address,
+  };
 
-  fs.writeFileSync(deploymentPath, JSON.stringify(deployments, null, 2));
+  fs.writeFileSync(deploymentPath, JSON.stringify(deployments, null, 2) + "\n");
+  console.log("\nSaved deployments.json:");
+  console.log(JSON.stringify(deployments.contracts, null, 2));
 
-  console.log("📦 All deployments saved to deployments.json:");
-  console.log(JSON.stringify(deployments, null, 2));
+  // Propagate addresses into the frontend so nothing is hardcoded.
+  sync();
 }
 
 main().catch((error) => {

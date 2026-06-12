@@ -3,7 +3,9 @@ node_modules/
 venv/
 .env
 .env.local
-
+agent/.env
+contracts/.env
+**/.env
 # Build artifacts
 dist/
 

@@ -30,18 +30,6 @@ Arvyon introduces three primitives:
 
 ---
 
-## Use Cases
-
-| Domain | How Arvyon Helps |
-|---|---|
-| DeFi Trading Agents | Prove every trade respected user-defined risk limits |
-| DAO Governance | Cryptographically verify voting agents followed delegate preferences |
-| Healthcare Data Markets | Prove agents only accessed policy-compliant data |
-| Web3 Game NPCs | Audit autonomous NPC economic decisions on-chain |
-| Media Provenance | Verify AI editorial policy was followed before publishing |
-| Smart Contract Auditing | Bind audit agents to authorized inspection scope |
-
----
 
 ## Tech Stack
 
@@ -75,3 +63,14 @@ Key references this work builds upon:
 ## Status
 
 🔨 In active development
+
+Working today:
+
+- **Agent** — LangGraph pipeline (`observe → decide → intent → submit`). Runs in a
+  fast mock mode by default; set `ARVYON_REAL_ZK=1` for real Groth16 proofs and
+  `ARVYON_RPC_URL` / `ARVYON_PRIVATE_KEY` to submit decisions on-chain. See
+  `agent/.env.example`.
+- **Contracts** — PolicyRegistry, PDRLogger and Executor deployed to Sepolia
+  (addresses in `contracts/deployments.json`).
+- **Frontend** — Next.js dApp (`app/`) with wallet connect, policy registration,
+  and a public Policy Decision Record audit feed wired to the Sepolia contracts.
