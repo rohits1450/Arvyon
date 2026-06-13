@@ -1,86 +1,42 @@
 """
-Decide Node - LLM Reasoning & Policy Evaluation
+Decide Node - Reasoning & Policy Evaluation
 
-Uses LLM to:
-- Evaluate current state against policy constraints
-- Reason through valid action space
-- Generate candidate transactions
-- Assess compliance before commitment
+Picks an action given the observed state. Uses a real LLM when one is
+configured (any provider — see agent/llm.py), otherwise falls back to a
+deterministic, rule-based stub. The stub is NOT AI; it just maps the market
+price into the policy bounds so the pipeline still runs end-to-end offline.
 """
-import json
-import os
 from agent.state import AgentState
+from agent.llm import llm_decide
+
 
 def decide_node(state: AgentState) -> dict:
-    """Execute decision phase"""
+    """Execute decision phase."""
     print(f"\n[DECIDE]")
-    
-    observed_data = state.get("observed_data", {})
-    
-    # Try importing anthropic
-    client = None
-    try:
-        from anthropic import Anthropic
-        if os.environ.get("ANTHROPIC_API_KEY"):
-            client = Anthropic()
-    except ImportError:
-        print("[WARNING] Anthropic SDK not installed - using mock decisions")
 
-    if client is None:
-        # Mock decision (deterministic for testing)
-        decision = {
-            "should_act": True,
-            "action_type": "TRADE",
-            "proposed_value": 45,  # Within bounds [10, 100]
-            "rationale": "Market price favorable, within policy bounds"
-        }
-        print(f"   [Mock] Decision: {decision['action_type']} value={decision['proposed_value']}")
+    observed_data = state.get("observed_data", {})
+    p_min = observed_data.get("policy_min", 0)
+    p_max = observed_data.get("policy_max", 0)
+    market_price = observed_data.get("market_price", 0)
+
+    # 1) Real LLM decision when a provider is configured.
+    decision = llm_decide(observed_data)
+    if decision is not None:
+        print(f"   [LLM] Decision: {decision['action_type']} value={decision['proposed_value']}")
+        print(f"         Rationale: {decision['rationale']}")
         return {"decision": decision}
 
-    # Real LLM decision
-    prompt = f"""
-You are an autonomous AI agent operating on a blockchain with strict policy constraints.
-
-Current State:
-- Policy bounds: [{observed_data.get('policy_min')}, {observed_data.get('policy_max')}]
-- Current balance: {observed_data.get('current_balance')}
-- Market price: {observed_data.get('market_price')}
-- Volatility: {observed_data.get('market_volatility')}
-
-Decide: Should you execute a trade action? If yes, what value within your policy?
-The proposed_value must be an integer between {observed_data.get('policy_min')} and {observed_data.get('policy_max')}.
-"""
-
-    # Constrain the response to a strict JSON schema so the output is always
-    # valid, parseable JSON (no prompt-format drift).
-    decision_schema = {
-        "type": "object",
-        "properties": {
-            "should_act": {"type": "boolean"},
-            "action_type": {"type": "string", "enum": ["TRADE", "VOTE", "DATA_ACCESS"]},
-            "proposed_value": {"type": "integer"},
-            "rationale": {"type": "string"},
-        },
-        "required": ["should_act", "action_type", "proposed_value", "rationale"],
-        "additionalProperties": False,
+    # 2) Rule-based fallback (no LLM configured) — clearly not AI.
+    proposed = min(max(market_price, p_min), p_max)
+    decision = {
+        "should_act": True,
+        "action_type": "TRADE",
+        "proposed_value": proposed,
+        "rationale": (
+            f"[rule-based fallback, no LLM] market price {market_price} "
+            f"clamped into [{p_min}, {p_max}] -> {proposed}"
+        ),
+        "engine": "rule-based",
     }
-
-    try:
-        response = client.messages.create(
-            model="claude-opus-4-8",
-            max_tokens=1024,
-            output_config={"format": {"type": "json_schema", "schema": decision_schema}},
-            messages=[{"role": "user", "content": prompt}]
-        )
-
-        response_text = next(b.text for b in response.content if b.type == "text")
-        decision = json.loads(response_text)
-        print(f"   LLM Decision: {decision['action_type']} (value={decision['proposed_value']})")
-    except Exception as e:
-        print(f"   [WARN] LLM call failed: {e}")
-        decision = {
-            "should_act": False,
-            "rationale": f"LLM error: {str(e)}"
-        }
-
+    print(f"   [Rule-based fallback] No LLM configured -> value={proposed}")
     return {"decision": decision}

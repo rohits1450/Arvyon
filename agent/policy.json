@@ -1,0 +1,6 @@
+{
+  "actionType": "TRADE",
+  "policyMin": 10,
+  "policyMax": 100,
+  "description": "Trade actions must propose a value within [policyMin, policyMax]."
+}

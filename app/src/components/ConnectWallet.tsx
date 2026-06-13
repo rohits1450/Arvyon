@@ -2,6 +2,7 @@
 
 import { useWalletContext } from "@/src/context/WalletContext";
 import { shortenHex } from "@/src/lib/formatters";
+import { NETWORK } from "@/src/lib/constants";
 
 export function ConnectWallet() {
   const { address, isConnecting, isCorrectNetwork, connect, switchToSepolia } =
@@ -25,7 +26,7 @@ export function ConnectWallet() {
         onClick={switchToSepolia}
         className="rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-400"
       >
-        Switch to Sepolia
+        Switch to {NETWORK.name}
       </button>
     );
   }

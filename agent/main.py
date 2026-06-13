@@ -21,6 +21,7 @@ except ImportError:
     pass
 
 from agent.state import AgentState
+from agent.config import get_agent_config
 from agent.nodes.observe import observe_node
 from agent.nodes.decide import decide_node
 from agent.nodes.intent import intent_node
@@ -47,10 +48,11 @@ def create_agent_graph():
     app = workflow.compile()
     return app
 
-def run_agent(agent_address: str, policy_hash: str, iterations: int = 1):
+def run_agent(agent_address: str, policy_hash: str, policy: dict | None = None, iterations: int = 1):
     """Run agent graph"""
     app = create_agent_graph()
-    
+    policy = policy or {}
+
     print(f"\n{'='*60}")
     print(f"[START] Arvyon LangGraph Agent Starting")
     print(f"   Address: {agent_address[:10]}...")
@@ -59,10 +61,11 @@ def run_agent(agent_address: str, policy_hash: str, iterations: int = 1):
 
     for i in range(iterations):
         print(f"\n--- Iteration {i+1}/{iterations} ---")
-        
+
         initial_state = {
             "agent_address": agent_address,
             "policy_hash": policy_hash,
+            "policy": policy,
             "iteration": i + 1,
             "messages": [],
             "observed_data": {},
@@ -90,9 +93,15 @@ def run_agent(agent_address: str, policy_hash: str, iterations: int = 1):
     print(f"{'='*60}\n")
 
 if __name__ == "__main__":
-    # Example usage
+    import os
+
+    # Everything is derived from config (agent/policy.json + env), nothing is
+    # hardcoded: the address comes from ARVYON_PRIVATE_KEY (or ARVYON_AGENT_ADDRESS),
+    # and the policy + on-chain hash come from the policy file.
+    cfg = get_agent_config()
     run_agent(
-        agent_address="0xCbA7D0b1A7d42d213f9f72F4532426dDCd247a3F", # Replaced private key with public address for safety
-        policy_hash="0x3898fd5d5c5c6e56a916ef845cd8a0cf91639823ad0bf030a3f285e54052526c",
-        iterations=1
+        agent_address=cfg["agent_address"],
+        policy_hash=cfg["policy_hash"],
+        policy=cfg["policy"],
+        iterations=int(os.environ.get("ARVYON_ITERATIONS", "1")),
     )

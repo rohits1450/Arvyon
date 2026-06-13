@@ -40,6 +40,41 @@
         "Executor"
       ]
     },
+    "/home/nerzotic_rs/Arvyon/contracts/contracts/zk/PolicyCheckVerifier.sol": {
+      "lastModificationDate": 1781294345115,
+      "contentHash": "b414b03a4cdcebfb4bec83af5a1d1d2a",
+      "sourceName": "contracts/zk/PolicyCheckVerifier.sol",
+      "solcConfig": {
+        "version": "0.8.19",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.7.0 <0.9.0"
+      ],
+      "artifacts": [
+        "Groth16Verifier"
+      ]
+    },
     "/home/nerzotic_rs/Arvyon/contracts/contracts/PDRLogger.sol": {
       "lastModificationDate": 1781018410852,
       "contentHash": "620b5bceb6be284b46d44e00ab470029",
@@ -73,41 +108,6 @@
       ],
       "artifacts": [
         "PDRLogger"
-      ]
-    },
-    "/home/nerzotic_rs/Arvyon/contracts/contracts/zk/PolicyCheckVerifier.sol": {
-      "lastModificationDate": 1781279156655,
-      "contentHash": "012a4977b4f4955af94bf52d8acca577",
-      "sourceName": "contracts/zk/PolicyCheckVerifier.sol",
-      "solcConfig": {
-        "version": "0.8.19",
-        "settings": {
-          "optimizer": {
-            "enabled": false,
-            "runs": 200
-          },
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.7.0 <0.9.0"
-      ],
-      "artifacts": [
-        "Groth16Verifier"
       ]
     },
     "/home/nerzotic_rs/Arvyon/contracts/contracts/PolicyRegistry.sol": {

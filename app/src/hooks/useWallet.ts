@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { BrowserProvider } from "ethers";
-import { NETWORK, SEPOLIA_CHAIN_ID, SEPOLIA_CHAIN_ID_HEX } from "@/src/lib/constants";
+import { NETWORK, CHAIN_ID, CHAIN_ID_HEX } from "@/src/lib/constants";
 
 export interface WalletState {
   address: string | null;
@@ -62,7 +62,7 @@ export function useWallet(): WalletState {
     try {
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: SEPOLIA_CHAIN_ID_HEX }],
+        params: [{ chainId: CHAIN_ID_HEX }],
       });
     } catch (e: unknown) {
       // 4902 = chain not added to the wallet yet
@@ -71,7 +71,7 @@ export function useWallet(): WalletState {
           method: "wallet_addEthereumChain",
           params: [
             {
-              chainId: SEPOLIA_CHAIN_ID_HEX,
+              chainId: CHAIN_ID_HEX,
               chainName: NETWORK.name,
               rpcUrls: [NETWORK.rpcUrl],
               nativeCurrency: NETWORK.nativeCurrency,
@@ -104,7 +104,7 @@ export function useWallet(): WalletState {
     chainId,
     provider,
     isConnecting,
-    isCorrectNetwork: chainId === SEPOLIA_CHAIN_ID,
+    isCorrectNetwork: chainId === CHAIN_ID,
     error,
     connect,
     switchToSepolia,

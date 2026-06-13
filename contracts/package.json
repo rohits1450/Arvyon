@@ -6,11 +6,14 @@
   "scripts": {
     "test": "hardhat test",
     "compile": "hardhat compile",
+    "node": "hardhat node",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
     "deploy": "hardhat run scripts/deploy.js --network sepolia",
-    "test-e2e": "hardhat run scripts/test-e2e.js --network sepolia",
-    "test-e2e-real-proof": "hardhat run scripts/test-e2e-real-proof.js --network sepolia",
-    "test-verifier-only": "hardhat run scripts/test-verifier-only.js --network sepolia",
-    "test-verifier-direct": "hardhat run scripts/test-verifier-direct.js --network sepolia"
+    "sync": "node scripts/sync-config.js",
+    "register-policy:local": "hardhat run scripts/register-policy.js --network localhost",
+    "register-policy:sepolia": "hardhat run scripts/register-policy.js --network sepolia",
+    "test:onchain-proof": "hardhat run scripts/test-onchain-proof.js"
   },
   "keywords": [],
   "author": "",

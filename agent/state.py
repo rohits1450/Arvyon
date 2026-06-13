@@ -4,6 +4,7 @@ class AgentState(TypedDict):
     """State passed between LangGraph nodes"""
     agent_address: str
     policy_hash: str
+    policy: dict
     iteration: int
     messages: list
     observed_data: dict

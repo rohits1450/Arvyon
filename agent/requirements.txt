@@ -4,8 +4,10 @@
 langgraph>=0.1.0
 langchain>=0.1.0
 
-# LLM Integration
-anthropic>=0.20.0
+# LLM Integration (provider-agnostic: Anthropic, or any OpenAI-compatible
+# endpoint incl. OpenRouter / Groq / Together / local Ollama / LM Studio)
+anthropic>=0.40.0
+openai>=1.40.0
 
 # Blockchain
 web3>=6.0.0

@@ -5,7 +5,7 @@ import { keccak256, toUtf8Bytes } from "ethers";
 import { useWalletContext } from "@/src/context/WalletContext";
 import { useReadContracts, useWriteContracts } from "@/src/hooks/useContract";
 import { runTransaction } from "@/src/components/TransactionToast";
-import { isZeroHash } from "@/src/lib/formatters";
+import { canonicalJson, isZeroHash } from "@/src/lib/formatters";
 
 export default function CreatePolicyPage() {
   const { address, provider, isCorrectNetwork, connect } = useWalletContext();
@@ -13,16 +13,34 @@ export default function CreatePolicyPage() {
   const writers = useWriteContracts(provider);
 
   const [policyText, setPolicyText] = useState(
-    JSON.stringify({ actionType: "TRADE", min: 10, max: 100 }, null, 2),
+    JSON.stringify(
+      {
+        actionType: "TRADE",
+        policyMin: 10,
+        policyMax: 100,
+        description:
+          "Trade actions must propose a value within [policyMin, policyMax].",
+      },
+      null,
+      2,
+    ),
   );
   const [existing, setExisting] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  // Hash the canonical form of the parsed policy (sorted keys, no whitespace),
+  // so the hash matches the agent regardless of formatting. Falls back to
+  // hashing the raw text if it isn't valid JSON.
   const policyHash = useMemo(() => {
     try {
-      return keccak256(toUtf8Bytes(policyText));
+      const parsed = JSON.parse(policyText);
+      return keccak256(toUtf8Bytes(canonicalJson(parsed)));
     } catch {
-      return "";
+      try {
+        return keccak256(toUtf8Bytes(policyText));
+      } catch {
+        return "";
+      }
     }
   }, [policyText]);
 

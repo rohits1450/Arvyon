@@ -1,5 +1,20 @@
 /** Display formatting helpers for addresses, hashes and timestamps. */
 
+/**
+ * Canonical JSON: object keys sorted recursively, no insignificant whitespace.
+ * Matches the agent's `json.dumps(policy, sort_keys=True, separators=(",",":"))`
+ * so the same policy hashes identically in the dApp and the agent.
+ */
+export function canonicalJson(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value);
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  const obj = value as Record<string, unknown>;
+  const entries = Object.keys(obj)
+    .sort()
+    .map((k) => `${JSON.stringify(k)}:${canonicalJson(obj[k])}`);
+  return `{${entries.join(",")}}`;
+}
+
 export function shortenHex(value: string, lead = 6, tail = 4): string {
   if (!value) return "";
   if (value.length <= lead + tail) return value;

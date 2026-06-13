@@ -92,19 +92,20 @@ async function main() {
   console.log("  on-chain verifyProof valid, compliance=0 -> isAuthorized =", authorized2, "\n");
   assert.strictEqual(authorized2, false, "non-compliant proof must not authorize");
 
-  // --- Case 3: tampered proof must fail verification ---
-  console.log("[Case 3] tampered proof -> verifyProof should revert/reject");
+  // --- Case 3: tampered proof must NOT authorize (verifyProof returns false,
+  // or the pairing precompile reverts — either way, never authorized). ---
+  console.log("[Case 3] tampered proof -> must not authorize");
   const tampered = { ...ok, a: [ok.a[0], "12345"] };
-  let rejected = false;
+  let authorized3 = false;
   try {
-    await executor.callStatic.executeWithVerification(
+    authorized3 = await executor.callStatic.executeWithVerification(
       agent.address, "TRADE", tampered.a, tampered.b, tampered.c, tampered.pub,
     );
   } catch {
-    rejected = true;
+    authorized3 = false; // reverted = rejected
   }
-  console.log("  tampered proof rejected on-chain:", rejected, "\n");
-  assert.ok(rejected, "tampered proof must be rejected by the on-chain verifier");
+  console.log("  tampered proof -> isAuthorized =", authorized3, "\n");
+  assert.strictEqual(authorized3, false, "tampered proof must never authorize");
 
   console.log("ALL ASSERTIONS PASSED — on-chain ZK verification is genuine.");
 }
