@@ -1,76 +1,88 @@
 # Arvyon
 
-Arvyon is a ZK-verified autonomous AI agent framework for trustless policy
-enforcement on blockchain. It enables users to deploy AI agents that act
-on-chain autonomously, while every decision is paired with a zero-knowledge
-proof of policy compliance, stored as an immutable on-chain audit record.
+Arvyon is a ZK-verified autonomous AI agent framework for trustless policy enforcement on blockchain. It enables users to deploy AI agents that act on-chain autonomously, while every decision is paired with a zero-knowledge proof of policy compliance, stored as an immutable on-chain audit record.
 
 ---
 
 ## The Problem
 
-AI agents operating on blockchain can execute transactions, vote in DAOs,
-and manage assets autonomously. But there's no way to prove the agent
-followed the rules it was given by, leading users to blindly trust off-chain logic.
-
+AI agents operating on blockchain can execute transactions, vote in DAOs, and manage assets autonomously. However, traditional frameworks require users to blindly trust off-chain logic, leaving no mathematical proof that the agent actually followed the rules it was given.
 
 ---
 
 ## The Solution
 
-Arvyon introduces three primitives:
+Arvyon introduces a completely trustless, end-to-end framework built on four primitives:
 
-- **Transaction Intent Schema (TIS)** — A structured declaration of what
-  the agent intends to do and why, generated before every action
-- **ZK Policy Proof** — A zero-knowledge proof that the intended action
-  complies with the user-defined policy, without revealing internal
-  agent logic or raw data
-- **Policy Decision Record (PDR)** — An on-chain immutable log of every
-  agent decision, queryable by anyone, forever
+- **Transaction Intent Schema (TIS)** — A structured declaration of what the agent intends to do and its reasoning, generated before every action.
+- **ZK Policy Proof** — A zero-knowledge proof that the intended action complies with the user-defined policy (e.g., maximum trade limits), without revealing internal complex AI logic on-chain.
+- **Policy Decision Record (PDR)** — An on-chain immutable log of every agent decision, queryable by anyone, forever.
+- **Executor Contract** — A smart contract that mathematically verifies the ZK Proof on-chain. If valid, it executes the real transaction (e.g., swapping tokens on Uniswap); if invalid, the transaction is perfectly blocked.
 
 ---
-
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| AI Agent Core | Python, LangGraph |
-| ZK Proof Engine | Circom, Noir (Aztec) |
-| Smart Contracts | Solidity (EVM compatible) |
-| On-chain Data | The Graph (GraphQL subgraphs) |
-| Frontend dApp | Next.js, ethers.js, Tailwind CSS |
-| Testing | Foundry |
+| **AI Agent Core** | Python, LangGraph, Ollama (Llama 3.1) |
+| **ZK Proof Engine** | Circom, snarkjs (Groth16) |
+| **Smart Contracts** | Solidity, Hardhat |
+| **Frontend dApp** | Next.js, React, Tailwind CSS, ethers.js |
 
 ---
 
-## Research
+## Project Architecture
 
-Arvyon is being developed alongside a research paper:
+Arvyon operates as a continuous pipeline bridging off-chain AI reasoning with on-chain verification.
 
-**"Arvyon: A ZK-Verified Autonomous AI Agent Framework for Trustless
-Policy Enforcement on Blockchain"**
+### 1. Setup & Policy Registration in Dapp
+A user interacts with the Dapp to create a policy for their AI agent. This policy is hashed and stored on the Sepolia testnet via the `PolicyRegistry` smart contract.
 
-Key references this work builds upon:
-- *Verifying Authenticity and Intent in a Trustless Environment*
-  (arXiv:2511.15712, 2025)
-- *Autonomous Agents on Blockchains: Standards and Execution Models*
-  (arXiv:2601.04583, 2026)
-- *ERC-8126: AI Agent Verification* (Ethereum Magicians, Jan 2026)
+### 2. The Agent Loop (LangGraph Pipeline)
+The core autonomous loop :
+* **Observe:** The agent fetches the registered policy bounds and current market data (via CoinGecko).
+* **Decide:** The agent asks an LLM (e.g., Llama 3.1) to reason about the market data and propose an action.
+* **Intent & ZK Proof:** The agent structures the decision into a TIS and generates a mathematical Zero-Knowledge (ZK) proof using Circom/snarkjs that proves the action complies with the policy bounds.
+* **Submit:** The agent submits the decision and ZK proof to the blockchain.
+
+### 3. On-Chain Verification (Smart Contracts)
+When submitted to Sepolia:
+* The `Executor` contract runs an on-chain verification of the Groth16 ZK proof.
+* If mathematically valid, the action is approved and the transaction is forwarded to the target protocol (DeFi execution).
+* The decision is permanently logged into the `PDRLogger`.
+
+### 4. Audit & Transparency (Dashboard)
+The Next.js dApp listens to the blockchain and displays a live, human-readable Dashboard. Users can watch a live stream of the agent's thought process (via the Live Agent Terminal) and see an immutable feed of `ZK Verified` executions.
 
 ---
 
-## Status
+## Quick Start Guide
 
-🔨 In active development
+### 1. Start the Frontend dApp
+```bash
+cd app
+npm install
+npm run dev
+```
+Open `http://localhost:3000` to view the Dashboard. Connect your MetaMask to the Sepolia Testnet.
 
-Working today:
+### 2. Configure the Agent
+In the `agent/` folder, configure your `.env` file (copy from `.env.example`).
+Ensure you set:
+- `ARVYON_PRIVATE_KEY` (Your Sepolia wallet key)
+- `ARVYON_REAL_ZK=1` (To generate real cryptographic proofs)
+- `ARVYON_SUBMIT_MODE=both` (To log decisions and execute them on-chain)
 
-- **Agent** — LangGraph pipeline (`observe → decide → intent → submit`). Runs in a
-  fast mock mode by default; set `ARVYON_REAL_ZK=1` for real Groth16 proofs and
-  `ARVYON_RPC_URL` / `ARVYON_PRIVATE_KEY` to submit decisions on-chain. See
-  `agent/.env.example`.
-- **Contracts** — PolicyRegistry, PDRLogger and Executor deployed to Sepolia
-  (addresses in `contracts/deployments.json`).
-- **Frontend** — Next.js dApp (`app/`) with wallet connect, policy registration,
-  and a public Policy Decision Record audit feed wired to the Sepolia contracts.
+### 3. Run the AI Agent
+From the root directory, launch the agent loop:
+```bash
+python3 -m agent.main
+```
+Watch the Live Agent Terminal on your web dashboard as the AI observes the market, generates its mathematical proofs, and dispatches real transactions to Sepolia.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
