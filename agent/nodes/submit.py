@@ -14,6 +14,11 @@ configured, this node is a no-op and the agent runs entirely off-chain.
     ARVYON_PRIVATE_KEY    enable broadcasting transactions
     ARVYON_DRY_RUN=1      build/estimate but do not broadcast
     ARVYON_SUBMIT_MODE    "pdr" (default) | "executor" | "both"
+
+Real-action dispatch (executor mode only; all optional):
+    ARVYON_EXEC_TARGET     address the Executor forwards an authorized action to
+    ARVYON_EXEC_PAYLOAD    hex calldata for that action (default "0x")
+    ARVYON_EXEC_VALUE_WEI  wei to forward with the action (default 0)
 """
 import os
 from agent.state import AgentState
@@ -69,8 +74,17 @@ def submit_node(state: AgentState) -> dict:
         print(f"   [PDR] {result['pdr']}")
 
     if mode in ("executor", "both"):
-        print(f"   [EXEC] Submitting ZK proof to Executor...")
-        result["executor"] = client.submit_execution(agent, action_type, proof_generated)
+        # Optional real-action dispatch: when ARVYON_EXEC_TARGET is set, an
+        # authorized decision makes the Executor forward value + calldata to
+        # that target. Unset -> verify-and-log only (default, off-chain-safe).
+        target = os.environ.get("ARVYON_EXEC_TARGET") or None
+        payload = os.environ.get("ARVYON_EXEC_PAYLOAD") or "0x"
+        value_wei = int(os.environ.get("ARVYON_EXEC_VALUE_WEI", "0"))
+        print(f"   [EXEC] Submitting ZK proof to Executor (target={target or 'log-only'})...")
+        result["executor"] = client.submit_execution(
+            agent, action_type, proof_generated,
+            target=target, payload=payload, value_wei=value_wei,
+        )
         print(f"   [EXEC] {result['executor']}")
 
     return {"chain_result": result}

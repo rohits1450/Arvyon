@@ -1,30 +1,40 @@
-Viewed main.py:1-99
-Viewed chain.py:1-325
+The Rules (Smart Contracts & Policy)
 
-Based on the codebase, the project operates as a continuous pipeline that bridges off-chain AI reasoning with on-chain verification. The workflow is orchestrated by a **LangGraph** state machine running in the `agent` directory. 
+First, you define a Policy (e.g., "The agent can only trade if the value is between 10 and 100").
+This policy is hashed and registered on-chain in the PolicyRegistry smart contract (which we just did!). This acts as the immutable source of truth for the agent's boundaries.
+The Brains (Python AI Agent)
 
-Here is step-by-step how the project works end-to-end:
+The Python script you just ran (agent.main) is the off-chain AI.
+It observes market conditions (e.g., market volatility) and asks an LLM (like Llama) what to do.
+The LLM spits out a decision (e.g., TRADE value=10) along with a human-readable Rationale.
+The Trustless Proof (Zero-Knowledge ZK)
 
-### 1. Setup & Policy Registration (Frontend)
-A user interacts with the Next.js frontend (`/app`) to create and register a policy for their AI agent. This policy (the rules the agent must follow) is hashed and stored on the blockchain via the `PolicyRegistry` smart contract.
+Instead of blindly trusting the LLM, the agent takes the decision and compares it against the Policy.
+It generates a ZK-Proof (using Circom/snarkjs) that proves mathematically: "Yes, this decision is within the allowed policy bounds," without actually revealing the underlying complex logic on-chain.
+The Audit Trail (On-Chain Submission & dApp)
 
-### 2. The Agent Loop (The LangGraph Pipeline)
-The core of the project is in `/agent/main.py`, which defines an autonomous loop consisting of four specific "nodes" (steps):
+The Agent submits the decision, rationale, and the ZK-Proof to the Sepolia blockchain via the PDRLogger contract.
+The smart contract verifies the ZK-Proof. If valid, it permanently logs the action.
+Finally, your Next.js dApp listens to this contract and displays the activity in a beautiful frontend for you to audit!
+Step-by-Step Testing Guide
+To experience the full flow yourself, follow these steps:
 
-*   **Step 1: Observe (`observe_node`)**
-    The agent fetches the current state of the world. It pulls the registered policy hash from the `PolicyRegistry` contract, current on-chain state, and any necessary market data.
-*   **Step 2: Decide (`decide_node`)**
-    The agent uses an LLM (Large Language Model) to reason about the data it just observed. It asks: *"Given the current state and my rules (policy), should I take an action? If so, what?"*
-*   **Step 3: Intent & ZK Proof (`intent_node`)**
-    If the agent decides to act, it generates a **Transaction Intent Schema (TIS)**—a structured JSON document declaring exactly what it is going to do. It then passes this intent through a ZK bridge (`zk_bridge.py`) to generate a **Zero-Knowledge (ZK) proof** (using Circom/Noir). This mathematically proves the decision complies with the policy *without* revealing the inner workings of the AI.
-*   **Step 4: Submit (`submit_node`)**
-    The agent takes the TIS and the ZK proof and submits them to the blockchain via `/agent/chain.py`.
+1. Start the dApp Frontend
+Open a new terminal, navigate to the app folder, and start the frontend:
 
-### 3. On-Chain Verification (Smart Contracts)
-When the agent submits its decision to the blockchain on the Sepolia testnet:
-*   The **`Executor`** contract receives the transaction and runs an on-chain verification of the ZK proof (`executeWithVerification()`). 
-*   If the proof is mathematically valid (meaning the agent definitively followed the policy), the action is approved.
-*   The decision is then permanently logged into the **`PDRLogger`** (Policy Decision Record).
+bash
+cd app
+npm run dev
+Open http://localhost:3000 in your web browser.
 
-### 4. Audit & Transparency (Frontend)
-Anyone can go to the frontend dApp's dashboard and view the public **Policy Decision Record** feed. They don't have to trust the AI developer; they can see the verified mathematical proof on the blockchain that the agent followed its exact instructions.
+2. Connect Your Wallet
+On the dApp, connect your MetaMask wallet.
+Ensure MetaMask is switched to the Sepolia Testnet.
+3. Run the AI Agent
+In another terminal (from the root Arvyon folder), run the agent again:
+
+bash
+python3 -m agent.main
+4. Watch the Magic Happen
+In the terminal, you will see the LLM "thinking", printing its rationale, generating the proof, and broadcasting the transaction to Sepolia.
+In the browser, go to your dApp's Dashboard. The moment the terminal says [CHAIN] On-chain result, the new decision, along with the LLM's rationale, will pop up on your dApp's feed as a mathematically verified, immutable record!

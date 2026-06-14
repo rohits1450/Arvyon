@@ -5,7 +5,7 @@ import { shortenHex } from "@/src/lib/formatters";
 import { NETWORK } from "@/src/lib/constants";
 
 export function ConnectWallet() {
-  const { address, isConnecting, isCorrectNetwork, connect, switchToSepolia } =
+  const { address, isConnecting, isCorrectNetwork, connect, switchNetwork } =
     useWalletContext();
 
   if (!address) {
@@ -23,7 +23,7 @@ export function ConnectWallet() {
   if (!isCorrectNetwork) {
     return (
       <button
-        onClick={switchToSepolia}
+        onClick={switchNetwork}
         className="rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-400"
       >
         Switch to {NETWORK.name}

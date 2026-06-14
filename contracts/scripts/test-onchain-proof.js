@@ -66,15 +66,16 @@ async function main() {
   console.log("[Case 1] value=50 within bounds -> expect isAuthorized=true");
   const ok = await genProof(50, POLICY_MIN, POLICY_MAX);
   assert.strictEqual(BigInt(ok.pub[0]), 1n, "circuit should report compliant");
+  const ZERO = ethers.constants.AddressZero;
   const authorized = await executor.callStatic.executeWithVerification(
-    agent.address, "TRADE", ok.a, ok.b, ok.c, ok.pub,
+    agent.address, "TRADE", ZERO, "0x", ok.a, ok.b, ok.c, ok.pub,
   );
   console.log("  on-chain verifyProof + compliance -> isAuthorized =", authorized);
   assert.strictEqual(authorized, true, "compliant proof must authorize on-chain");
 
   // Send it for real so the PDR event is emitted.
   const rcpt = await (
-    await executor.executeWithVerification(agent.address, "TRADE", ok.a, ok.b, ok.c, ok.pub)
+    await executor.executeWithVerification(agent.address, "TRADE", ZERO, "0x", ok.a, ok.b, ok.c, ok.pub)
   ).wait();
   const logged = pdr.interface.parseLog(
     rcpt.logs.find((l) => l.address === pdr.address),
@@ -87,7 +88,7 @@ async function main() {
   const bad = await genProof(150, POLICY_MIN, POLICY_MAX);
   assert.strictEqual(BigInt(bad.pub[0]), 0n, "circuit should report non-compliant");
   const authorized2 = await executor.callStatic.executeWithVerification(
-    agent.address, "TRADE", bad.a, bad.b, bad.c, bad.pub,
+    agent.address, "TRADE", ZERO, "0x", bad.a, bad.b, bad.c, bad.pub,
   );
   console.log("  on-chain verifyProof valid, compliance=0 -> isAuthorized =", authorized2, "\n");
   assert.strictEqual(authorized2, false, "non-compliant proof must not authorize");
@@ -99,7 +100,7 @@ async function main() {
   let authorized3 = false;
   try {
     authorized3 = await executor.callStatic.executeWithVerification(
-      agent.address, "TRADE", tampered.a, tampered.b, tampered.c, tampered.pub,
+      agent.address, "TRADE", ZERO, "0x", tampered.a, tampered.b, tampered.c, tampered.pub,
     );
   } catch {
     authorized3 = false; // reverted = rejected
@@ -107,7 +108,31 @@ async function main() {
   console.log("  tampered proof -> isAuthorized =", authorized3, "\n");
   assert.strictEqual(authorized3, false, "tampered proof must never authorize");
 
-  console.log("ALL ASSERTIONS PASSED — on-chain ZK verification is genuine.");
+  // --- Case 4: a genuine compliant proof dispatches a REAL on-chain action ---
+  console.log("[Case 4] compliant proof + target -> dispatches real action");
+  const MockTarget = await ethers.getContractFactory("MockTarget");
+  const target = await MockTarget.deploy();
+  await target.deployed();
+  const payload = target.interface.encodeFunctionData("ping", [50]);
+
+  const rcpt4 = await (
+    await executor.executeWithVerification(
+      agent.address, "TRADE", target.address, payload, ok.a, ok.b, ok.c, ok.pub,
+    )
+  ).wait();
+  const executed = rcpt4.logs.some((l) => {
+    try {
+      return executor.interface.parseLog(l).name === "ActionExecuted";
+    } catch {
+      return false;
+    }
+  });
+  console.log("  target.callCount =", (await target.callCount()).toString(),
+    "| ActionExecuted emitted =", executed);
+  assert.strictEqual((await target.callCount()).toNumber(), 1, "authorized proof must dispatch the action");
+  assert.strictEqual(executed, true, "ActionExecuted must be emitted for a dispatched action");
+
+  console.log("\nALL ASSERTIONS PASSED — on-chain ZK verification + real execution are genuine.");
 }
 
 main()

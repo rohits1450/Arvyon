@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TERMINOLOGY } from "@/src/lib/terminology";
+import { NETWORK } from "@/src/lib/constants";
 
 const PRIMITIVES = [TERMINOLOGY.TIS, TERMINOLOGY.ZKP, TERMINOLOGY.PDR];
 
@@ -8,7 +9,7 @@ export default function Home() {
     <div className="mx-auto w-full max-w-5xl px-6 py-16">
       <section className="flex flex-col items-start gap-6">
         <span className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/50 dark:text-indigo-300">
-          ZK-verified · Sepolia testnet
+          ZK-verified · {NETWORK.name}
         </span>
         <h1 className="max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
           Trustless policy enforcement for autonomous on-chain AI agents.

@@ -71,9 +71,9 @@ describe("Executor", function () {
         const proofA = [0, 0];
         const proofB = [[0, 0], [0, 0]];
         const proofC = [0, 0];
-        const pubSignals = [1, 50, 10, 100]; // [isCompliant, actionValue, policyMin, policyMax]
+        const pubSignals = [1]; // [isCompliant]
 
-        await executor.executeWithVerification(agent2.address, "VOTE", proofA, proofB, proofC, pubSignals);
+        await executor.executeWithVerification(agent2.address, "VOTE", ethers.constants.AddressZero, "0x", proofA, proofB, proofC, pubSignals);
         expect.fail("Should have reverted");
       } catch (err) {
         expect(err.message).to.include("must have registered policy");
@@ -161,15 +161,16 @@ describe("Executor", function () {
       const proofA = [0, 0];
       const proofB = [[0, 0], [0, 0]];
       const proofC = [0, 0];
-      const pubSignals = [1, 50, 10, 100]; // [isCompliant, actionValue, policyMin, policyMax]
+      const pubSignals = [1]; // [isCompliant]
+      const ZERO = ethers.constants.AddressZero;
 
-      let tx = await executor.executeWithVerification(agent1.address, "ACTION_1", proofA, proofB, proofC, pubSignals);
+      let tx = await executor.executeWithVerification(agent1.address, "ACTION_1", ZERO, "0x", proofA, proofB, proofC, pubSignals);
       await tx.wait();
 
       const updatedHash = ethers.utils.id("policy-v2");
       await policyRegistry.connect(agent1).updatePolicy(updatedHash);
 
-      tx = await executor.executeWithVerification(agent1.address, "ACTION_2", proofA, proofB, proofC, pubSignals);
+      tx = await executor.executeWithVerification(agent1.address, "ACTION_2", ZERO, "0x", proofA, proofB, proofC, pubSignals);
       await tx.wait();
 
       expect(tx).to.not.be.null;
@@ -187,6 +188,137 @@ describe("Executor", function () {
 
       expect(hash1).to.equal(policy1);
       expect(hash2).to.equal(policy2);
+    });
+  });
+
+  describe("Real Execution (authorized action dispatch)", function () {
+    // These tests use a MockVerifier so verifyProof() can be forced true/false,
+    // exercising the Executor's real-action dispatch path without a SnarkJS proof.
+    let mockExecutor, mockVerifier, mockTarget;
+    const proofA = [0, 0];
+    const proofB = [[0, 0], [0, 0]];
+    const proofC = [0, 0];
+    const compliant = [1]; // pubSignals[0] = isCompliant
+
+    beforeEach(async function () {
+      await policyRegistry.connect(agent1).registerPolicy(ethers.utils.id("exec-policy"));
+
+      const MockVerifier = await ethers.getContractFactory("MockVerifier");
+      mockVerifier = await MockVerifier.deploy(true);
+      await mockVerifier.deployed();
+
+      const MockTarget = await ethers.getContractFactory("MockTarget");
+      mockTarget = await MockTarget.deploy();
+      await mockTarget.deployed();
+
+      const Executor = await ethers.getContractFactory("Executor");
+      mockExecutor = await Executor.deploy(policyRegistry.address, pdrLogger.address, mockVerifier.address);
+      await mockExecutor.deployed();
+    });
+
+    it("dispatches the action to the target when authorized", async function () {
+      const payload = mockTarget.interface.encodeFunctionData("ping", [42]);
+
+      const tx = await mockExecutor.executeWithVerification(
+        agent1.address, "TRADE", mockTarget.address, payload,
+        proofA, proofB, proofC, compliant,
+      );
+      await tx.wait();
+
+      expect((await mockTarget.callCount()).toNumber()).to.equal(1);
+      expect((await mockTarget.lastArg()).toNumber()).to.equal(42);
+      expect(await mockTarget.lastCaller()).to.equal(mockExecutor.address);
+    });
+
+    it("forwards ETH value to the target on an authorized action", async function () {
+      const payload = mockTarget.interface.encodeFunctionData("ping", [7]);
+      const value = ethers.utils.parseEther("0.01");
+
+      await mockExecutor.executeWithVerification(
+        agent1.address, "TRADE", mockTarget.address, payload,
+        proofA, proofB, proofC, compliant, { value },
+      );
+
+      expect((await mockTarget.lastValue()).toString()).to.equal(value.toString());
+      expect((await ethers.provider.getBalance(mockTarget.address)).toString()).to.equal(value.toString());
+    });
+
+    it("emits ActionExecuted for an authorized action", async function () {
+      const payload = mockTarget.interface.encodeFunctionData("ping", [1]);
+      const tx = await mockExecutor.executeWithVerification(
+        agent1.address, "TRADE", mockTarget.address, payload,
+        proofA, proofB, proofC, compliant,
+      );
+      const receipt = await tx.wait();
+      const event = receipt.events.find((e) => e.event === "ActionExecuted");
+      expect(event, "ActionExecuted not emitted").to.not.be.undefined;
+      expect(event.args.target).to.equal(mockTarget.address);
+      expect(event.args.success).to.be.true;
+    });
+
+    it("does NOT dispatch when the proof is invalid (unauthorized)", async function () {
+      await mockVerifier.setResult(false);
+      const payload = mockTarget.interface.encodeFunctionData("ping", [99]);
+
+      const tx = await mockExecutor.executeWithVerification(
+        agent1.address, "TRADE", mockTarget.address, payload,
+        proofA, proofB, proofC, compliant,
+      );
+      await tx.wait();
+
+      expect((await mockTarget.callCount()).toNumber()).to.equal(0);
+    });
+
+    it("does NOT dispatch when compliance flag is 0", async function () {
+      const payload = mockTarget.interface.encodeFunctionData("ping", [99]);
+
+      const tx = await mockExecutor.executeWithVerification(
+        agent1.address, "TRADE", mockTarget.address, payload,
+        proofA, proofB, proofC, [0],
+      );
+      await tx.wait();
+
+      expect((await mockTarget.callCount()).toNumber()).to.equal(0);
+    });
+
+    it("refunds forwarded value when no action is dispatched", async function () {
+      await mockVerifier.setResult(false);
+      const value = ethers.utils.parseEther("0.05");
+
+      // Unauthorized + value sent: value must not be trapped in the Executor.
+      await mockExecutor.connect(agent1).executeWithVerification(
+        agent1.address, "TRADE", mockTarget.address, "0x",
+        proofA, proofB, proofC, compliant, { value },
+      );
+
+      expect((await ethers.provider.getBalance(mockExecutor.address)).toString()).to.equal("0");
+    });
+
+    it("verifies and logs without dispatching when target is address(0)", async function () {
+      const tx = await mockExecutor.executeWithVerification(
+        agent1.address, "TRADE", ethers.constants.AddressZero, "0x",
+        proofA, proofB, proofC, compliant,
+      );
+      await tx.wait();
+
+      expect((await mockTarget.callCount()).toNumber()).to.equal(0);
+    });
+
+    it("reverts the whole tx when the dispatched action reverts", async function () {
+      // Encode a call to a non-existent selector on MockTarget; the low-level
+      // call returns success=false for a revert, which the Executor surfaces.
+      const badPayload = "0xdeadbeef";
+      let reverted = false;
+      try {
+        await mockExecutor.executeWithVerification(
+          agent1.address, "TRADE", mockTarget.address, badPayload,
+          proofA, proofB, proofC, compliant,
+        );
+      } catch (err) {
+        reverted = true;
+        expect(err.message).to.include("action call reverted");
+      }
+      expect(reverted).to.be.true;
     });
   });
 });

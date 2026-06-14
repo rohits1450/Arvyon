@@ -1,25 +1,25 @@
 {
-  "network": "localhost",
-  "chainId": 31337,
-  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "timestamp": "2026-06-13T04:17:56.106Z",
+  "network": "sepolia",
+  "chainId": 11155111,
+  "deployer": "0x0AB1EE996D99C492530dF8316d7aC75eBAb9d727",
+  "timestamp": "2026-06-14T09:21:51.279Z",
   "note": "Single source of truth for Arvyon contract addresses. Verifier generated from agent/circuits/zkey_final.zkey.",
   "contracts": {
     "PolicyRegistry": {
-      "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+      "address": "0x7Ced80fFCBae16B824f7DEf13BfAb305685ea130"
     },
     "PDRLogger": {
-      "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"
+      "address": "0x0a10cD2d3A30F8Ef69302A4E6A15516CD4DbF718"
     },
     "PolicyCheckVerifier": {
-      "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+      "address": "0x25642D727b028795Fd2005b731de0DEac057e039"
     },
     "Executor": {
-      "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+      "address": "0x479857365BE60D6Ba0fc47F5C482ae18e9914973"
     }
   },
-  "PolicyRegistry": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  "PDRLogger": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-  "PolicyCheckVerifier": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-  "Executor": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
+  "PolicyRegistry": "0x7Ced80fFCBae16B824f7DEf13BfAb305685ea130",
+  "PDRLogger": "0x0a10cD2d3A30F8Ef69302A4E6A15516CD4DbF718",
+  "PolicyCheckVerifier": "0x25642D727b028795Fd2005b731de0DEac057e039",
+  "Executor": "0x479857365BE60D6Ba0fc47F5C482ae18e9914973"
 }

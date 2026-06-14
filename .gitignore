@@ -20,3 +20,24 @@ Thumbs.db
 
 # Logs
 *.log
+agent_logs.txt
+
+# Documentation & Notes
+*.md
+!README.md
+!app/README.md
+!contracts/README.md
+flow.txt
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Hardhat
+contracts/artifacts/
+contracts/cache/
+contracts/typechain-types/
+
+# Next.js
+app/.next/
+app/out/

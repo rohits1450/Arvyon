@@ -10,8 +10,15 @@ const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 const { sync } = require("./sync-config");
+const { exportVerifier } = require("./export-verifier");
 
 async function main() {
+  // Re-derive the on-chain verifier from the agent's canonical proving key
+  // BEFORE compiling, so the deployed Groth16Verifier always matches the zkey
+  // the agent generates proofs with — they can never silently drift apart.
+  exportVerifier();
+  await hre.run("compile");
+
   const [deployer] = await hre.ethers.getSigners();
   const network = hre.network.name;
   const chainId = (await hre.ethers.provider.getNetwork()).chainId;

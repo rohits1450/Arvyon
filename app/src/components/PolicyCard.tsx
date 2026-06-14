@@ -29,14 +29,18 @@ export function PolicyCard({ address, policyHash, timestamp }: PolicyCardProps) 
         <div className="flex justify-between gap-4">
           <dt className="text-zinc-500">Agent</dt>
           <dd className="font-mono">
-            <a
-              href={explorerAddress(address)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 hover:underline dark:text-indigo-400"
-            >
-              {shortenHex(address)}
-            </a>
+            {explorerAddress(address) ? (
+              <a
+                href={explorerAddress(address)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 hover:underline dark:text-indigo-400"
+              >
+                {shortenHex(address)}
+              </a>
+            ) : (
+              <span>{shortenHex(address)}</span>
+            )}
           </dd>
         </div>
         <div className="flex justify-between gap-4">

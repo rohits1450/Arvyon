@@ -15,20 +15,32 @@ from datetime import datetime
 from agent.state import AgentState
 
 
-def _market_snapshot() -> dict:
-    """Simulate a market observation.
+import requests
 
-    Deterministic when ARVYON_MARKET_SEED is set (useful for tests/demos),
-    otherwise a fresh random snapshot each iteration. Replace this with a real
-    price oracle / API call for production.
-    """
-    seed = os.environ.get("ARVYON_MARKET_SEED")
-    rng = random.Random(int(seed)) if seed is not None else random.Random()
-    price = rng.randint(20, 80)
-    # Volatility derived from how far the price sits from the mid-range.
-    spread = abs(price - 50)
-    volatility = "HIGH" if spread > 25 else "MEDIUM" if spread > 12 else "LOW"
-    return {"market_price": price, "market_volatility": volatility}
+def _market_snapshot() -> dict:
+    """Fetch live market observation from CoinGecko."""
+    try:
+        # Fetch the live price of Ethereum in USD from CoinGecko
+        response = requests.get(
+            "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
+            timeout=5
+        )
+        data = response.json()
+        price = data["ethereum"]["usd"]
+        
+        # Determine volatility randomly for demo purposes, 
+        # or it could be calculated using historical data API.
+        volatility = random.choice(["LOW", "MEDIUM", "HIGH"])
+        
+        return {"market_price": price, "market_volatility": volatility}
+    except Exception as e:
+        print(f"   [WARN] CoinGecko API failed ({e}), falling back to mock data.")
+        seed = os.environ.get("ARVYON_MARKET_SEED")
+        rng = random.Random(int(seed)) if seed is not None else random.Random()
+        price = rng.randint(20, 80)
+        spread = abs(price - 50)
+        volatility = "HIGH" if spread > 25 else "MEDIUM" if spread > 12 else "LOW"
+        return {"market_price": price, "market_volatility": volatility}
 
 
 def observe_node(state: AgentState) -> dict:

@@ -6,6 +6,7 @@ import { useWalletContext } from "@/src/context/WalletContext";
 import { useReadContracts, useWriteContracts } from "@/src/hooks/useContract";
 import { runTransaction } from "@/src/components/TransactionToast";
 import { canonicalJson, isZeroHash } from "@/src/lib/formatters";
+import { NETWORK } from "@/src/lib/constants";
 
 export default function CreatePolicyPage() {
   const { address, provider, isCorrectNetwork, connect } = useWalletContext();
@@ -164,7 +165,7 @@ export default function CreatePolicyPage() {
 
       {address && !isCorrectNetwork && (
         <p className="mt-4 text-sm text-amber-600 dark:text-amber-400">
-          Switch your wallet to the Sepolia network to submit transactions.
+          Switch your wallet to the {NETWORK.name} network to submit transactions.
         </p>
       )}
     </div>

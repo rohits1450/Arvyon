@@ -27,14 +27,16 @@ export default function AdminPage() {
           >
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">{c.name}</h2>
-              <a
-                href={explorerAddress(CONTRACTS[c.name])}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
-              >
-                Etherscan ↗
-              </a>
+              {explorerAddress(CONTRACTS[c.name]) && (
+                <a
+                  href={explorerAddress(CONTRACTS[c.name])}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                >
+                  {NETWORK.name} ↗
+                </a>
+              )}
             </div>
             <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{c.role}</p>
             <div className="mt-2 break-all font-mono text-xs text-zinc-500">

@@ -69,14 +69,16 @@ EXECUTOR_ABI = [
         "inputs": [
             {"name": "agent", "type": "address"},
             {"name": "actionType", "type": "string"},
+            {"name": "target", "type": "address"},
+            {"name": "payload", "type": "bytes"},
             {"name": "proofA", "type": "uint256[2]"},
             {"name": "proofB", "type": "uint256[2][2]"},
             {"name": "proofC", "type": "uint256[2]"},
             {"name": "pubSignals", "type": "uint256[1]"},
         ],
         "name": "executeWithVerification",
-        "outputs": [{"name": "success", "type": "bool"}],
-        "stateMutability": "nonpayable",
+        "outputs": [{"name": "isAuthorized", "type": "bool"}],
+        "stateMutability": "payable",
         "type": "function",
     },
 ]
@@ -212,8 +214,12 @@ class ChainClient:
             "policyHash": "0x" + policy_hash.hex() if isinstance(policy_hash, bytes) else policy_hash,
         }
 
-    def _send(self, fn) -> Dict:
-        """Build, (optionally) sign and broadcast a contract function call."""
+    def _send(self, fn, value: int = 0) -> Dict:
+        """Build, (optionally) sign and broadcast a contract function call.
+
+        ``value`` (wei) is forwarded with the transaction for payable calls such
+        as Executor.executeWithVerification dispatching a value-bearing action.
+        """
         if not self.account:
             return {"status": "skipped", "reason": "no private key configured"}
 
@@ -221,8 +227,9 @@ class ChainClient:
         tx = fn.build_transaction(
             {
                 "from": sender,
-                "nonce": self.w3.eth.get_transaction_count(sender),
+                "nonce": self.w3.eth.get_transaction_count(sender, "pending"),
                 "chainId": self.w3.eth.chain_id,
+                "value": int(value),
             }
         )
         # Estimate gas; surface failures (e.g. require() reverts) clearly.
@@ -244,8 +251,23 @@ class ChainClient:
             "gasUsed": receipt.gasUsed,
         }
 
-    def submit_execution(self, agent: str, action_type: str, proof_result: Dict) -> Dict:
-        """Submit the ZK proof to Executor.executeWithVerification()."""
+    def submit_execution(
+        self,
+        agent: str,
+        action_type: str,
+        proof_result: Dict,
+        target: Optional[str] = None,
+        payload: Optional[str] = None,
+        value_wei: int = 0,
+    ) -> Dict:
+        """Submit the ZK proof to Executor.executeWithVerification().
+
+        When ``target`` is a non-zero address, an authorized decision triggers a
+        real on-chain action: the Executor forwards ``value_wei`` and ``payload``
+        to ``target``. With ``target`` unset/zero the call is verify-and-log only
+        (the audit primitive), preserving the agent's default off-chain-safe
+        behaviour.
+        """
         if not self.executor:
             return {"status": "skipped", "reason": "no Executor address"}
         if "proof" not in proof_result:
@@ -254,10 +276,24 @@ class ChainClient:
         a, b, c = format_proof_for_solidity(proof_result["proof"])
         pub_signals = [int(s) for s in proof_result["publicSignals"]]
 
-        fn = self.executor.functions.executeWithVerification(
-            Web3.to_checksum_address(agent), action_type, a, b, c, pub_signals
+        target_addr = (
+            Web3.to_checksum_address(target)
+            if target and int(target, 16) != 0
+            else "0x0000000000000000000000000000000000000000"
         )
-        return self._send(fn)
+        payload_bytes = bytes.fromhex(payload[2:] if payload and payload.startswith("0x") else (payload or ""))
+
+        fn = self.executor.functions.executeWithVerification(
+            Web3.to_checksum_address(agent),
+            action_type,
+            target_addr,
+            payload_bytes,
+            a,
+            b,
+            c,
+            pub_signals,
+        )
+        return self._send(fn, value=value_wei)
 
     def log_decision(
         self, agent: str, action_type: str, policy_hash: str, is_compliant: bool

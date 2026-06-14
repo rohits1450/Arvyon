@@ -11,6 +11,7 @@
     "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia",
     "deploy": "hardhat run scripts/deploy.js --network sepolia",
     "sync": "node scripts/sync-config.js",
+    "export-verifier": "node scripts/export-verifier.js",
     "register-policy:local": "hardhat run scripts/register-policy.js --network localhost",
     "register-policy:sepolia": "hardhat run scripts/register-policy.js --network sepolia",
     "test:onchain-proof": "hardhat run scripts/test-onchain-proof.js"

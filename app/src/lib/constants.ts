@@ -10,16 +10,27 @@
 import abi from "@/src/contracts/abi.json";
 import deployments from "@/src/contracts/deployments.json";
 
+// Block explorer per chain. A local Hardhat node (31337) has no explorer, so it
+// is intentionally absent — NETWORK.explorer resolves to "" there and the UI
+// renders plain (non-link) addresses instead of broken hrefs.
 const EXPLORERS: Record<number, string> = {
   11155111: "https://sepolia.etherscan.io",
   1: "https://etherscan.io",
-  31337: "http://localhost:8545",
 };
 
 const CHAIN_NAMES: Record<number, string> = {
   11155111: "Sepolia",
   1: "Ethereum",
   31337: "Localhost",
+};
+
+// Default RPC endpoint per chain, used when NEXT_PUBLIC_RPC_URL is not set. Keeps
+// the dApp pointed at the right network based purely on the deployed chainId, so
+// a local deploy (31337) auto-targets the Hardhat node instead of a public RPC.
+const DEFAULT_RPC: Record<number, string> = {
+  31337: "http://127.0.0.1:8545",
+  11155111: "https://ethereum-sepolia-rpc.publicnode.com",
+  1: "https://ethereum-rpc.publicnode.com",
 };
 
 export const CHAIN_ID = deployments.chainId;
@@ -30,10 +41,15 @@ export const NETWORK = {
   chainIdHex: CHAIN_ID_HEX,
   name: CHAIN_NAMES[CHAIN_ID] || deployments.network || "Unknown",
   rpcUrl:
-    process.env.NEXT_PUBLIC_RPC_URL || "https://ethereum-sepolia-rpc.publicnode.com",
-  explorer: EXPLORERS[CHAIN_ID] || "https://sepolia.etherscan.io",
+    process.env.NEXT_PUBLIC_RPC_URL ||
+    DEFAULT_RPC[CHAIN_ID] ||
+    "https://ethereum-sepolia-rpc.publicnode.com",
+  explorer: EXPLORERS[CHAIN_ID] ?? "",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
 };
+
+/** Whether the active network has a real (https) block explorer to link to. */
+export const HAS_EXPLORER = NETWORK.explorer.startsWith("https://");
 
 export const CONTRACTS = {
   PolicyRegistry:
@@ -52,9 +68,9 @@ export const ABIS = abi as {
 export type ContractName = keyof typeof CONTRACTS;
 
 export function explorerAddress(address: string): string {
-  return `${NETWORK.explorer}/address/${address}`;
+  return HAS_EXPLORER ? `${NETWORK.explorer}/address/${address}` : "";
 }
 
 export function explorerTx(hash: string): string {
-  return `${NETWORK.explorer}/tx/${hash}`;
+  return HAS_EXPLORER ? `${NETWORK.explorer}/tx/${hash}` : "";
 }

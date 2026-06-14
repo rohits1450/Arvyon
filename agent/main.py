@@ -94,6 +94,24 @@ def run_agent(agent_address: str, policy_hash: str, policy: dict | None = None, 
 
 if __name__ == "__main__":
     import os
+    import sys
+
+    class TeeLogger:
+        def __init__(self, filename):
+            self.terminal = sys.stdout
+            self.log_file = open(filename, "w", buffering=1)
+
+        def write(self, message):
+            self.terminal.write(message)
+            self.log_file.write(message)
+
+        def flush(self):
+            self.terminal.flush()
+            self.log_file.flush()
+
+    # Intercept all prints and write to the frontend's readable log file
+    log_path = os.path.join(os.path.dirname(__file__), "..", "agent_logs.txt")
+    sys.stdout = TeeLogger(log_path)
 
     # Everything is derived from config (agent/policy.json + env), nothing is
     # hardcoded: the address comes from ARVYON_PRIVATE_KEY (or ARVYON_AGENT_ADDRESS),
